@@ -19,7 +19,7 @@ public class Main {
 
             while(true){
                 String linha = entrada.readLine();
-                if(linha == null || linha.isEmpty()){
+                if(linha == null || linha.trim().isEmpty()){
                     System.out.println("Cliente desconectou.");
                     conn.close();
                     break;

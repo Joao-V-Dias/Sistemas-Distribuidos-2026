@@ -18,15 +18,13 @@ public class Main {
             BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
 
             while(true){
-                System.out.println(">>");
+                System.out.print(">> ");
                 linha = teclado.readLine();
 
-                //cliente envia mensagem para servidor
                 saida.println(linha);
-
-                //Cliente recebe mensagem do servidor
                 retornoServ = entrada.readLine();
                 if(retornoServ == null){
+                    System.out.println("Conexao encerrada!");
                     break;
                 }
 
