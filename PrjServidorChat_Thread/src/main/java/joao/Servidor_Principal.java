@@ -14,8 +14,16 @@ public class Servidor_Principal extends Thread {
     private static Vector clientes;
     private Socket conexao;
     private String meuNome;
+    private static int clientesOnline;
+    private static Frame frame;
 
     static void main() {
+        
+        java.awt.EventQueue.invokeLater(() -> {
+            frame = new Frame();
+            frame.setVisible(true);
+        });
+        
         clientes = new Vector();
 
         try{
@@ -25,6 +33,8 @@ public class Servidor_Principal extends Thread {
                 System.out.printf("Esperando um cliente se conectar\n");
                 Socket cliente = server.accept();
                 System.out.println("Conexao realizada com sucesso");
+                clientesOnline++;
+                frame.atualizarTotalUsuarios(clientesOnline);
 
                 Thread t = new Servidor_Principal(cliente);
                 t.start();
@@ -59,6 +69,8 @@ public class Servidor_Principal extends Thread {
             }
 
             enviarParaTodos(saida, " saiu", " do chat ");
+            clientesOnline--;
+            frame.atualizarTotalUsuarios(clientesOnline);
             clientes.remove(saida);
             conexao.close();
 

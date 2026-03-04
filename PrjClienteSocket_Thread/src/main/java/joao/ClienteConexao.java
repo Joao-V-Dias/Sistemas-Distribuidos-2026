@@ -7,22 +7,27 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Cliente_Principal extends Thread {
+public class ClienteConexao extends Thread{
 
     private static boolean done = false;
     private Socket conexao;
+    
+    public ClienteConexao() {
+    }
 
-    static void main() {
+    public ClienteConexao(Socket conexao) {
+        this.conexao = conexao;
+    }
+    
+    public static void init(String servidor, int porta, String meuNome){
         try{
-            Socket con = new Socket("127.0.0.1", 2222);
+            Socket con = new Socket(servidor, porta);
 
             PrintStream saida = new PrintStream(con.getOutputStream());
             BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
-            System.out.print("Digite seu nome: ");
-            String meuNome = teclado.readLine();
             saida.println(meuNome);
 
-            Thread t = new Thread(new Cliente_Principal(con));
+            Thread t = new Thread(new ClienteConexao(con));
             t.start();
 
             String linha;
@@ -41,13 +46,9 @@ public class Cliente_Principal extends Thread {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
-
-    public Cliente_Principal(Socket conexao) {
-        this.conexao = conexao;
-    }
-
+    
+    @Override
     public void run(){
         try{
             BufferedReader entrada = new BufferedReader(new InputStreamReader(conexao.getInputStream()));

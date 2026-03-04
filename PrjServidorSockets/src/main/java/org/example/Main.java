@@ -15,6 +15,7 @@ public class Main {
             System.out.println("Conectou!!!");
 
             BufferedReader entrada = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            System.out.println(entrada.lines());
             PrintStream saida = new PrintStream(conn.getOutputStream());
 
             while(true){
