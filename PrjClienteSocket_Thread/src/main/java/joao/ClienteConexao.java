@@ -5,48 +5,39 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import javax.swing.JOptionPane;
 
 public class ClienteConexao extends Thread{
 
-    private static boolean done = false;
-    private Socket conexao;
-    
+    private static Socket con;
+    private static PrintStream saida;
+    private static boolean conectado = false;
+
     public ClienteConexao() {
     }
 
-    public ClienteConexao(Socket conexao) {
-        this.conexao = conexao;
+    public ClienteConexao(Socket con) {
+        this.con = con;
     }
     
-    public static void init(String servidor, int porta, String meuNome){
-        try{
-            Socket con = new Socket(servidor, porta);
+    public static void init(String servidor, int porta, String meuNome) {
+        new Thread(() -> {
+            try {
+                con = new Socket(servidor, porta);
+                saida = new PrintStream(con.getOutputStream());
 
-            PrintStream saida = new PrintStream(con.getOutputStream());
-            BufferedReader teclado = new BufferedReader(new InputStreamReader(System.in));
-            saida.println(meuNome);
+                saida.println(meuNome);
 
-            Thread t = new Thread(new ClienteConexao(con));
-            t.start();
+                Thread t = new Thread(new ClienteConexao(con));
+                t.start();
 
-            String linha;
-            while (!done) {
-                System.out.print(">> ");
-                linha = teclado.readLine();
-
-                if (done) {
-                    break;
-                }
-
-                saida.println(linha);
+                conectado = true;
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Erro ao conectar!");
             }
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        }).start();
     }
+    
     
     @Override
     public void run(){
