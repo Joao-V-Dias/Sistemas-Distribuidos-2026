@@ -24,8 +24,8 @@ public class PainelControle extends javax.swing.JFrame {
         return txtPalavras.getText();
     }
     
-    public void setCaptura(String nome, String palavra, String mensagem){
-        txtCaptura.append(nome + " digitou '" + palavra + "' em : " + mensagem + "\n");
+    public void setCaptura(String captura){
+        txtCaptura.append(captura);
     }
 
     /**

@@ -4,6 +4,7 @@
 
 package com.joao.prjchatservidor;
 
+import java.util.List;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,6 +12,10 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -20,9 +25,10 @@ public class PrjChatServidor extends Thread{
     
     private Socket conexao;
     private String nome;
-    private static ArrayList<PrintStream> usuarios = new ArrayList();
+    private static List<PrintStream> usuarios = Collections.synchronizedList(new ArrayList<>());
     private static PainelControle painel;
-    private static int numUsuarios;
+    private static AtomicInteger numUsuarios = new AtomicInteger();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public PrjChatServidor(Socket conexao) {
         this.conexao = conexao;
@@ -41,8 +47,7 @@ public class PrjChatServidor extends Thread{
             
             while(true){
                 Socket cliente = server.accept();
-                numUsuarios++;
-                painel.setNumUsuarios(numUsuarios);
+                painel.setNumUsuarios(numUsuarios.incrementAndGet());
 
                 Thread t = new PrjChatServidor(cliente);
                 t.start();
@@ -73,18 +78,23 @@ public class PrjChatServidor extends Thread{
                 
                 for(String c: chaves){
                     if(mensagem.toLowerCase().contains(c.toLowerCase()) && !c.isBlank()){
-                        painel.setCaptura(nome, c, mensagem);
+                        String txtCaptura = nome + " digitou '" + c + "' em : " + mensagem + "\n";
+                        painel.setCaptura(txtCaptura);
+                        executor.execute(() -> {
+                            ManiplaArquivo.escreverArq(txtCaptura, "log", true);
+                        });
                         break;
                     }
                 }
                 
-                for(PrintStream usuario: usuarios){
-                    usuario.println(nome + ": " + mensagem);
+                synchronized (usuarios) {
+                    for (PrintStream usuario : usuarios) {
+                        usuario.println(nome + ": " + mensagem);
+                    }
                 }
             }
             
-            numUsuarios--;
-            painel.setNumUsuarios(numUsuarios);
+            painel.setNumUsuarios(numUsuarios.decrementAndGet());
             for(PrintStream usuario: usuarios){
                     usuario.println(nome + " saiu do chat");
                 }
