@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="conteudo">
+      <label for="txtId">ID: </label>
+      <input type="text" id="txtId" />
+      <label for="txtNome">Nome: </label>
+      <input type="text" id="txtNome" />
+      <label for="txtCpf">Cpf: </label>
+      <input type="text" id="txtCpf" />
+      <label for="txtData_Nasc">Data de nascimento: </label>
+      <input type="text" id="txtData_Nasc" />
+
+      <button onclick="salvar()">Salvar</button>
+      <button onclick="consultar()">Listar</button>
+      <div id="resultado"></div>
+
+      <script>
+        function salvar() {
+          var id = document.getElementById("txtId").value;
+          var nome = document.getElementById("txtNome").value;
+          var cpf = document.getElementById("txtCpf").value;
+          var data_nasc = document.getElementById("txtData_Nasc").value;
+
+          var xmlHTTP_PUT = new XMLHttpRequest();
+          var url = "http://localhost:8080/api/pessoas";
+
+          xmlHTTP_PUT.open("PUT", url, true);
+          xmlHTTP_PUT.setRequestHeader("Content-type", "application/json");
+          alert(
+            `{"idpessoa":"` +
+              id +
+              `", "nome":"` +
+              nome +
+              `", "cpf": "` +
+              cpf +
+              `", "data_nasc": "` +
+              data_nasc +
+              `"}`,
+          );
+          xmlHTTP_PUT.send(
+            `{"idpessoa":"` +
+              id +
+              `", "nome":"` +
+              nome +
+              `", "cpf": "` +
+              cpf +
+              `", "data_nasc": "` +
+              data_nasc +
+              `"}`,
+          );
+
+          function consultar() {
+            var xmlHTTP_GET = new XMLHttpRequest();
+
+            var url = "http://localhost:8080/api/pessoas";
+
+            xmlHTTP_GET.onreadystatechange = function () {
+              if (xmlHTTP_GET.readyState == 4 && xmlHTTP_GET.status == 200) {
+                var lstP = JSON.parse(xmlHTTP_GET.responseText);
+                listarPessoas(lstP);
+              }
+            };
+
+            xmlHTTP_GET.open("GET", url, true);
+            xmlHTTP_GET.send();
+          }
+
+          function listarPessoas(lstP) {
+            var out = '<table border="2">';
+            out +=
+              "<tr><th>ID</th><th>Nome</th><th>CPF</th><th>Data de nascimento</th></tr>";
+
+            for (var i = 0; i < lstP.length; i++) {
+              out += "<tr>";
+              out += "<td>" + lstP[i].idpessoa + "</td>";
+              out += "<td>" + lstP[i].nome + "</td>";
+              out += "<td>" + lstP[i].cpf + "</td>";
+              out += "<td>" + lstP[i].data_nasc + "</td>";
+              out += "</tr>";
+            }
+
+            out += "</table>";
+            document.getElementById("resultado").innerHTML = out;
+          }
+        }
+      </script>
+    </div>
+  </body>
+</html>
