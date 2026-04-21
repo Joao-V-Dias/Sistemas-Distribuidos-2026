@@ -28,16 +28,16 @@ public class Core extends Thread {
                 InputStreamReader isr = new InputStreamReader(conn.getInputStream()); BufferedReader leitorRede = new BufferedReader(isr); PrintWriter saida = new PrintWriter(conn.getOutputStream(), true)) {
             String[] mensagem = leitorRede.readLine().split(",");
             String cpfRecebido = mensagem[0];
-            String tipo = mensagem[1];
+            String tipo = mensagem[1].toUpperCase();
 
             String mensagemSaida = "";
             switch (tipo) {
-                case "salvar" ->
+                case "SALVAR" ->
                     mensagemSaida = salvar(cpfRecebido);
-                case "consultar" ->
+                case "CONSULTAR" ->
                     mensagemSaida = consultar(cpfRecebido);
-                case "excluir" -> {
-                }
+                case "EXCLUIR" ->
+                    mensagemSaida = excluir(cpfRecebido);
             }
 
             registrarLog(cpfRecebido, tipo);
@@ -77,16 +77,16 @@ public class Core extends Thread {
         }
         return "CPF invalido";
     }
-    
+
     public String excluir(String cpf) {
-        if(ManipulaArquivo.excluirCpf(cpf, "inadimplentes")){
+        if (ManipulaArquivo.excluirCpf(cpf, "inadimplentes")) {
             return "CPF removido com sucesso";
         }
         return "Erro ao excluir CPF";
     }
 
     public void registrarLog(String cpf, String tipo) {
-        String log = "Data: " + new java.util.Date() + " - CPF: " + cpf + "Tipo: " + tipo;
+        String log = "DATA: " + new java.util.Date() + " - CPF: " + cpf + " OPERACAO: " + tipo;
         ManipulaArquivo.escreverArq(log, "auditoria", true);
     }
 }
