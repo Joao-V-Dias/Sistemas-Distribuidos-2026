@@ -11,7 +11,7 @@ public class Flor implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int idflor;
+    private Long idflor;
 
     @Column(nullable = false)
     private double comprimento_sepala;
@@ -43,11 +43,11 @@ public class Flor implements Serializable {
         this.planta = planta;
     }
 
-    public int getIdflor() {
+    public long getIdflor() {
         return idflor;
     }
 
-    public void setIdflor(int idflor) {
+    public void setIdflor(long idflor) {
         this.idflor = idflor;
     }
 

@@ -14,7 +14,7 @@ public class Planta implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int idplanta;
+    private Long idplanta;
 
     @Column(nullable = false, unique = true)
     private String genero;
@@ -23,11 +23,11 @@ public class Planta implements Serializable {
     @OneToMany(mappedBy = "planta", fetch = FetchType.LAZY)
     Set<Flor> flores = new HashSet<Flor>();
 
-    public int getIdplanta() {
+    public Long getIdplanta() {
         return idplanta;
     }
 
-    public void setIdplanta(int idplanta) {
+    public void setIdplanta(Long idplanta) {
         this.idplanta = idplanta;
     }
 
