@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Lotes</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fa-solid fa-syringe me-2"></i>Gestão de Imunizantes</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Vacinas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="fornecedores.html">Fornecedores</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="lotes.html">Lotes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorio_fornecedores.html">Relatório Fornecedores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorio_vacinas.html">Relatório Vacinas</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="row mb-3">
+            <div class="col">
+                <h2><i class="fa-solid fa-boxes-stacked text-info me-2"></i>Controle de Lotes</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <span id="formTitle" class="fw-bold text-dark">Novo Lote</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="loteForm" onsubmit="saveLote(event)">
+                            <input type="hidden" id="loteId">
+                            
+                            <div class="mb-3">
+                                <label for="numeroLote" class="form-label">Número do Lote</label>
+                                <input type="text" class="form-control" id="numeroLote" required placeholder="Ex: LOT-2026-001">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="dataValidade" class="form-label">Data de Validade</label>
+                                <input type="date" class="form-control" id="dataValidade" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="vacinaSelect" class="form-label">Vacina Associada</label>
+                                <select class="form-select" id="vacinaSelect" required>
+                                    <option value="" disabled selected>Carregando vacinas...</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fornecedorSelect" class="form-label">Fornecedor Associado</label>
+                                <select class="form-select" id="fornecedorSelect" required>
+                                    <option value="" disabled selected>Carregando fornecedores...</option>
+                                </select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label for="quantidadeInicial" class="form-label">Qtd. Inicial</label>
+                                    <input type="number" class="form-control" id="quantidadeInicial" min="0" required oninput="syncQtdAtual()">
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label for="quantidadeAtual" class="form-label">Qtd. Atual</label>
+                                    <input type="number" class="form-control" id="quantidadeAtual" min="0" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" required>
+                                    <option value="ATIVO" selected>ATIVO</option>
+                                    <option value="DISPONIVEL">DISPONÍVEL</option>
+                                    <option value="BLOQUEADO">BLOQUEADO</option>
+                                    <option value="VENCIDO">VENCIDO</option>
+                                    <option value="RESERVADO">RESERVADO</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="justificativa" class="form-label">Justificativa / Obs</label>
+                                <input type="text" class="form-control" id="justificativa" placeholder="Ex: Liberado para distribuição">
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success">Salvar</button>
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancelar / Limpar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card shadow-sm p-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nº Lote</th>
+                                    <th>Vacina / Fornecedor IDs</th>
+                                    <th>Quantidade (Atual/Inicial)</th>
+                                    <th>Validade</th>
+                                    <th>Status</th>
+                                    <th>Obs</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lotesTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">Carregando lotes...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Integração com API -->
+    <script>
+        const API_BASE = 'http://localhost:8080/api/sistemas';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            await loadSelects();
+            await loadLotes();
+        });
+
+        async function loadSelects() {
+            const vSelect = document.getElementById('vacinaSelect');
+            const fSelect = document.getElementById('fornecedorSelect');
+
+            try {
+                const resV = await fetch(API_BASE + '/vacinas');
+                if (resV.ok) {
+                    const vacinas = await resV.json();
+                    let optionsV = '<option value="" disabled selected>Selecione a Vacina...</option>';
+                    for (let i = 0; i < vacinas.length; i++) {
+                        const v = vacinas[i];
+                        optionsV += '<option value="' + v.id + '">' + v.nome + ' (' + v.fabricante + ')</option>';
+                    }
+                    vSelect.innerHTML = optionsV;
+                } else {
+                    vSelect.innerHTML = '<option value="" disabled>Erro ao buscar vacinas</option>';
+                }
+
+                const resF = await fetch(API_BASE + '/fornecedores');
+                if (resF.ok) {
+                    const fornecedores = await resF.json();
+                    let optionsF = '<option value="" disabled selected>Selecione o Fornecedor...</option>';
+                    for (let i = 0; i < fornecedores.length; i++) {
+                        const f = fornecedores[i];
+                        optionsF += '<option value="' + f.id + '">' + f.nome_fantasia + ' (' + f.cnpj + ')</option>';
+                    }
+                    fSelect.innerHTML = optionsF;
+                } else {
+                    fSelect.innerHTML = '<option value="" disabled>Erro ao buscar fornecedores</option>';
+                }
+            } catch (err) {
+                vSelect.innerHTML = '<option value="" disabled>Erro de rede</option>';
+                fSelect.innerHTML = '<option value="" disabled>Erro de rede</option>';
+            }
+        }
+
+        async function loadLotes() {
+            const tbody = document.getElementById('lotesTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-info me-2"></div>
+                        Carregando lotes...
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const response = await fetch(API_BASE + '/lotes');
+                if (!response.ok) {
+                    throw new Error("Erro na conexão");
+                }
+                
+                const lotes = await response.json();
+                
+                if (lotes.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                Nenhum lote cadastrado no momento.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let linhasHtml = '';
+                for (let i = 0; i < lotes.length; i++) {
+                    const l = lotes[i];
+                    const justificativa = l.justificativa || '-';
+                    
+                    linhasHtml += `
+                        <tr>
+                            <td><strong>${l.id}</strong></td>
+                            <td><code>${l.numeroLote}</code></td>
+                            <td>
+                                <div class="small">Vacina: <span class="badge bg-secondary">ID #${l.vacinaId}</span></div>
+                                <div class="small text-muted">Fornecedor: <span class="badge bg-info text-dark">ID #${l.fornecedorId}</span></div>
+                            </td>
+                            <td>
+                                <strong>${l.quantidadeAtual}</strong>
+                                <span class="text-muted">/ ${l.quantidadeInicial}</span>
+                            </td>
+                            <td>${l.dataValidade}</td>
+                            <td>
+                                <span class="badge ${getStatusBadgeClass(l.status)}">
+                                    ${l.status}
+                                </span>
+                            </td>
+                            <td><small class="text-muted">${justificativa}</small></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-warning text-white me-1" onclick="editLote(${l.id})" title="Editar">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteLote(${l.id})" title="Excluir">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+                tbody.innerHTML = linhasHtml;
+            } catch (err) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-danger">
+                            <i class="fa-solid fa-circle-exclamation me-1"></i>
+                            Erro ao conectar ao servidor.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function getStatusBadgeClass(status) {
+            if (status === 'ATIVO' || status === 'DISPONIVEL') {
+                return 'bg-success';
+            }
+            if (status === 'BLOQUEADO') {
+                return 'bg-danger';
+            }
+            if (status === 'VENCIDO') {
+                return 'bg-warning text-dark';
+            }
+            if (status === 'RESERVADO') {
+                return 'bg-info text-dark';
+            }
+            return 'bg-secondary';
+        }
+
+        function syncQtdAtual() {
+            const id = document.getElementById('loteId').value;
+            const initVal = document.getElementById('quantidadeInicial').value;
+            if (!id) {
+                document.getElementById('quantidadeAtual').value = initVal;
+            }
+        }
+
+        async function saveLote(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('loteId').value;
+            const payload = {
+                numeroLote: document.getElementById('numeroLote').value,
+                dataValidade: document.getElementById('dataValidade').value,
+                vacinaId: parseInt(document.getElementById('vacinaSelect').value),
+                fornecedorId: document.getElementById('fornecedorSelect').value,
+                quantidadeInicial: parseInt(document.getElementById('quantidadeInicial').value),
+                quantidadeAtual: parseInt(document.getElementById('quantidadeAtual').value),
+                status: document.getElementById('status').value,
+                justificativa: document.getElementById('justificativa').value
+            };
+
+            let url = API_BASE + '/lotes';
+            let metodo = 'POST';
+            if (id) {
+                url = API_BASE + '/lotes/' + id;
+                metodo = 'PUT';
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erro ao salvar");
+                }
+                
+                if (id) {
+                    alert('Lote alterado com sucesso!');
+                } else {
+                    alert('Lote criado com sucesso!');
+                }
+                resetForm();
+                loadLotes();
+            } catch (err) {
+                alert('Erro ao salvar o lote. Verifique se as dependências (Vacina e Fornecedor) estão corretas.');
+            }
+        }
+
+        async function editLote(id) {
+            try {
+                const response = await fetch(API_BASE + '/lotes/' + id);
+                if (!response.ok) {
+                    throw new Error("Erro ao buscar dados do lote");
+                }
+                
+                const l = await response.json();
+                
+                document.getElementById('loteId').value = l.id;
+                document.getElementById('numeroLote').value = l.numeroLote;
+                document.getElementById('dataValidade').value = l.dataValidade;
+                document.getElementById('vacinaSelect').value = l.vacinaId;
+                document.getElementById('fornecedorSelect').value = l.fornecedorId;
+                document.getElementById('quantidadeInicial').value = l.quantidadeInicial;
+                document.getElementById('quantidadeAtual').value = l.quantidadeAtual;
+                document.getElementById('status').value = l.status;
+                document.getElementById('justificativa').value = l.justificativa || '';
+                
+                document.getElementById('formTitle').innerText = 'Alterar Lote #' + l.id;
+            } catch (err) {
+                alert('Erro ao buscar dados do lote.');
+            }
+        }
+
+        async function deleteLote(id) {
+            const confirmar = confirm('Deseja realmente excluir este lote?');
+            if (!confirmar) {
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE + '/lotes/' + id, { method: 'DELETE' });
+                if (!response.ok) {
+                    throw new Error("Erro ao deletar");
+                }
+                
+                alert('Lote excluído com sucesso!');
+                loadLotes();
+                const idAtualForm = document.getElementById('loteId').value;
+                if (idAtualForm == id) {
+                    resetForm();
+                }
+            } catch (err) {
+                alert('Erro ao excluir o lote.');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('loteForm').reset();
+            document.getElementById('loteId').value = '';
+            document.getElementById('status').value = 'ATIVO';
+            document.getElementById('formTitle').innerText = 'Novo Lote';
+        }
+    </script>
+</body>
+</html>

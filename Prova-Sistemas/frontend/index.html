@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Vacinas</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fa-solid fa-syringe me-2"></i>Gestão de Imunizantes</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Vacinas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="fornecedores.html">Fornecedores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="lotes.html">Lotes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorio_fornecedores.html">Relatório Fornecedores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorio_vacinas.html">Relatório Vacinas</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="row mb-3">
+            <div class="col">
+                <h2><i class="fa-solid fa-virus text-primary me-2"></i>Controle de Vacinas</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <span id="formTitle" class="fw-bold">Nova Vacina</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="vacinaForm" onsubmit="saveVacina(event)">
+                            <input type="hidden" id="vacinaId">
+                            
+                            <div class="mb-3">
+                                <label for="nome" class="form-label">Nome da Vacina</label>
+                                <input type="text" class="form-control" id="nome" required placeholder="Ex: Pfizer, Coronavac">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fabricante" class="form-label">Fabricante</label>
+                                <input type="text" class="form-control" id="fabricante" required placeholder="Ex: BioNTech, Sinovac">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo / Tecnologia</label>
+                                <input type="text" class="form-control" id="tipo" required placeholder="Ex: RNAm, Vírus Inativado">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="dosesPorFrasco" class="form-label">Doses por Frasco</label>
+                                <input type="number" class="form-control" id="dosesPorFrasco" min="1" required placeholder="Ex: 5">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="descricao" class="form-label">Descrição</label>
+                                <textarea class="form-control" id="descricao" rows="3" placeholder="Detalhes opcionais..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success">Salvar</button>
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancelar / Limpar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow-sm p-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Fabricante</th>
+                                    <th>Tipo</th>
+                                    <th>Doses/Frasco</th>
+                                    <th>Descrição</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vacinasTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">Carregando vacinas...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api/sistemas/vacinas';
+
+        document.addEventListener('DOMContentLoaded', loadVacinas);
+
+        async function loadVacinas() {
+            const tbody = document.getElementById('vacinasTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                        Carregando vacinas...
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const resposta = await fetch(API);
+                if (!resposta.ok) {
+                    throw new Error("Erro na conexão");
+                }
+
+                const lista = await resposta.json();
+
+                if (lista.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                Nenhuma vacina cadastrada.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let linhasHtml = '';
+                for (let i = 0; i < lista.length; i++) {
+                    const v = lista[i];
+                    const descricao = v.descricao || '-';
+                    
+                    linhasHtml += `
+                        <tr>
+                            <td><strong>${v.id}</strong></td>
+                            <td>${v.nome}</td>
+                            <td>${v.fabricante}</td>
+                            <td><span class="badge bg-secondary">${v.tipo}</span></td>
+                            <td>${v.dosesPorFrasco}</td>
+                            <td><small class="text-muted">${descricao}</small></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-warning text-white me-1" onclick="editVacina(${v.id})">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteVacina(${v.id})">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                tbody.innerHTML = linhasHtml;
+
+            } catch (erro) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-danger">
+                            <i class="fa-solid fa-circle-exclamation me-1"></i>
+                            Erro de conexão com o servidor.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function saveVacina(e) {
+            e.preventDefault();
+            const id = document.getElementById('vacinaId').value;
+            const payload = {
+                nome: document.getElementById('nome').value,
+                fabricante: document.getElementById('fabricante').value,
+                tipo: document.getElementById('tipo').value,
+                dosesPorFrasco: parseInt(document.getElementById('dosesPorFrasco').value),
+                descricao: document.getElementById('descricao').value
+            };
+
+            let url = API;
+            let metodo = 'POST';
+            if (id) {
+                url = API + '/' + id;
+                metodo = 'PUT';
+            }
+
+            try {
+                const resposta = await fetch(url, {
+                    method: metodo,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resposta.ok) {
+                    if (id) {
+                        alert('Vacina alterada com sucesso!');
+                    } else {
+                        alert('Vacina cadastrada com sucesso!');
+                    }
+                    resetForm();
+                    loadVacinas();
+                } else {
+                    alert('Erro ao salvar vacina.');
+                }
+            } catch (erro) {
+                alert('Erro de conexão ao tentar salvar.');
+            }
+        }
+
+        async function editVacina(id) {
+            try {
+                const resposta = await fetch(API + '/' + id);
+                if (!resposta.ok) {
+                    throw new Error("Erro ao carregar dados da vacina");
+                }
+
+                const v = await resposta.json();
+
+                document.getElementById('vacinaId').value = v.id;
+                document.getElementById('nome').value = v.nome;
+                document.getElementById('fabricante').value = v.fabricante;
+                document.getElementById('tipo').value = v.tipo;
+                document.getElementById('dosesPorFrasco').value = v.dosesPorFrasco;
+                document.getElementById('descricao').value = v.descricao || '';
+                
+                document.getElementById('formTitle').innerText = 'Alterar Vacina #' + v.id;
+
+            } catch (erro) {
+                alert('Erro ao buscar dados da vacina para edição.');
+            }
+        }
+
+        async function deleteVacina(id) {
+            const confirmar = confirm('Excluir vacina?');
+            if (!confirmar) {
+                return;
+            }
+
+            try {
+                const resposta = await fetch(API + '/' + id, {
+                    method: 'DELETE'
+                });
+
+                if (resposta.ok) {
+                    alert('Vacina excluída!');
+                    loadVacinas();
+                    
+                    const idAtualForm = document.getElementById('vacinaId').value;
+                    if (idAtualForm == id) {
+                        resetForm();
+                    }
+                } else {
+                    alert('Erro ao excluir vacina.');
+                }
+            } catch (erro) {
+                alert('Erro de conexão ao tentar excluir.');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('vacinaForm').reset();
+            document.getElementById('vacinaId').value = '';
+            document.getElementById('formTitle').innerText = 'Nova Vacina';
+        }
+    </script>
+</body>
+</html>

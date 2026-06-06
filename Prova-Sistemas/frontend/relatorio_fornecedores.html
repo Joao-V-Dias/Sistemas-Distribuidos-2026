@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Lotes e Fornecedores</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fa-solid fa-syringe me-2"></i>Gestão de Imunizantes</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Vacinas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="fornecedores.html">Fornecedores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="lotes.html">Lotes</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="relatorio_fornecedores.html">Relatório Fornecedores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="relatorio_vacinas.html">Relatório Vacinas</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+        <div class="row mb-3">
+            <div class="col">
+                <h2><i class="fa-solid fa-file-invoice text-warning me-2"></i>Relatório Integrado: Lotes e Fornecedores</h2>
+                <p class="text-muted">Esta consulta combina dados de Lotes (banco Postgres) com os detalhes do Fornecedor correspondente (banco MongoDB do microserviço Python).</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card shadow-sm p-4">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nº Lote</th>
+                                    <th>ID Fornecedor</th>
+                                    <th>Razão Social</th>
+                                    <th>Nome Fantasia</th>
+                                    <th>CNPJ</th>
+                                    <th>Telefone</th>
+                                    <th>Email</th>
+                                    <th>Cidade/UF</th>
+                                    <th>Endereço</th>
+                                </tr>
+                            </thead>
+                            <tbody id="relatorioTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center py-4 text-muted">Carregando relatório combinado...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Integração com API -->
+    <script>
+        const API_URL = 'http://localhost:8080/api/sistemas/lotes-fornecedores';
+
+        document.addEventListener('DOMContentLoaded', loadRelatorio);
+
+        async function loadRelatorio() {
+            const tbody = document.getElementById('relatorioTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-warning me-2"></div>
+                        Carregando relatório combinado de fornecedores...
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error("Erro na conexão");
+                }
+                
+                const dados = await response.json();
+                
+                if (dados.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                Nenhum lote registrado para exibir.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let linhasHtml = '';
+                for (let i = 0; i < dados.length; i++) {
+                    const item = dados[i];
+                    const f = item.fornecedor || {};
+                    const razaoSocial = f.razao_social || '-';
+                    const nomeFantasia = f.nome_fantasia || '-';
+                    const cnpj = formatCnpj(f.cnpj) || '-';
+                    const telefone = f.telefone || '-';
+                    const email = f.email || '-';
+                    const cidade = f.cidade || '-';
+                    const estado = f.estado || '-';
+                    const endereco = f.endereco || '-';
+
+                    linhasHtml += `
+                        <tr>
+                            <td><code>${item.numeroLote}</code></td>
+                            <td><small class="text-muted">${item.fornecedorId}</small></td>
+                            <td><strong>${razaoSocial}</strong></td>
+                            <td>${nomeFantasia}</td>
+                            <td>${cnpj}</td>
+                            <td>${telefone}</td>
+                            <td>${email}</td>
+                            <td>${cidade}/${estado}</td>
+                            <td><small class="text-muted">${endereco}</small></td>
+                        </tr>
+                    `;
+                }
+
+                tbody.innerHTML = linhasHtml;
+            } catch (err) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-danger">
+                            <i class="fa-solid fa-circle-exclamation me-1"></i> 
+                            Erro ao buscar ou correlacionar dados do relatório.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function formatCnpj(cnpj) {
+            if (!cnpj) {
+                return '';
+            }
+            const num = cnpj.replace(/\D/g, '');
+            if (num.length === 14) {
+                return num.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+            }
+            return cnpj;
+        }
+    </script>
+</body>
+</html>

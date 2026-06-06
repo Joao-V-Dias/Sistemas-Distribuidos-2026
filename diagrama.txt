@@ -1,0 +1,134 @@
+@startuml
+
+' Configurações visuais do diagrama
+hide circle
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+package "Serviço 1 (Relacional)" {
+    
+    entity "usuário" as usuario {
+        * id : BIGINT <<PK>>
+        --
+        * nome : VARCHAR(250)
+        * email : VARCHAR(250) <<UN>>
+        * senha_hash : VARCHAR(255)
+        * perfil : ENUM
+        * ativo : BOOLEAN
+        ultimo_login : TIMESTAMP
+        * criado_em : TIMESTAMP
+    }
+
+    entity "paciente" as paciente {
+        * id : BIGINT <<PK>>
+        --
+        * nome : VARCHAR(250)
+        * cpf : VARCHAR(11) <<UN>>
+        * data_nascimento : DATE
+        sexo : CHAR(1)
+        telefone : VARCHAR(11)
+        observacoes : TEXT
+        * ativo : BOOLEAN
+        * criado_em : TIMESTAMP
+    }
+
+    entity "freezer" as freezer {
+        * id : BIGINT <<PK>>
+        --
+        * numero_serie : VARCHAR(100) <<UN>>
+        * modelo : VARCHAR(100)
+        localizacao : VARCHAR(200)
+        * temp_min_segura : DECIMAL(5,2)
+        * temp_max_segura : DECIMAL(5,2)
+        * status : ENUM
+        * criado_em : TIMESTAMP
+    }
+
+    entity "fornecedor" as fornecedor {
+        * id : BIGINT <<PK>>
+        --
+        * razao_social : VARCHAR(200)
+        * nome_fantasia : VARCHAR(150)
+        * cnpj : VARCHAR(18) <<UN>>
+        telefone : VARCHAR(20)
+        email : VARCHAR(150)
+        endereco : VARCHAR(300)
+        cidade : VARCHAR(100)
+        estado : CHAR(2)
+        * ativo : BOOLEAN
+        * criado_em : TIMESTAMP
+    }
+}
+
+package "Serviço 2 (Relacional)" {
+    
+    entity "vacina" as vacina {
+        * id : BIGINT <<PK>>
+        --
+        * nome : VARCHAR(150)
+        * fabricante : VARCHAR(150)
+        * tipo : VARCHAR(100)
+        doses_por_frasco : INTEGER
+        descricao : TEXT
+        * criado_em : TIMESTAMP
+    }
+
+    entity "lote" as lote {
+        * id : BIGINT <<PK>>
+        --
+        * vacina_id : BIGINT <<FK>>
+        * fornecedor_id : BIGINT <<FK>>
+        * freezer_id : BIGINT <<FK>>
+        * numero_lote : VARCHAR(100) <<UN>>
+        * data_validade : DATE
+        * quantidade_inicial : INTEGER
+        * quantidade_atual : INTEGER
+        * status : ENUM
+        justificativa : TEXT
+        * criado_em : TIMESTAMP
+        atualizado_em : TIMESTAMP
+    }
+}
+
+package "Serviço 3 (MongoDB - Não Relacional)" {
+    
+    entity "aplicação" as aplicacao {
+        * id : ObjectId <<PK>>
+        --
+        * paciente_id : BIGINT <<FK>>
+        * lote_id : BIGINT <<FK>>
+        * usuario_id : BIGINT <<FK>>
+        * dose : INTEGER
+        observacoes : String
+        * aplicado_em : TIMESTAMP
+    }
+
+    entity "registro_temperatura" as registro_temperatura {
+        * id : ObjectId <<PK>>
+        --
+        * freezer_id : BIGINT <<FK>>
+        temperatura : DECIMAL(5,2)
+        * dentro_faixa : BOOLEAN
+        * registrado_em : TIMESTAMP
+    }
+}
+
+' =========================================
+' RELACIONAMENTOS (Rígidos e Lógicos)
+' =========================================
+
+' Relacionamento interno (Serviço 2)
+lote }|--|| vacina : "vacina_id"
+
+' Relacionamentos lógicos / Cross-Service (Serviço 2 -> Serviço 1)
+lote }|..|| fornecedor : "fornecedor_id"
+lote }|..|| freezer : "freezer_id"
+
+' Relacionamentos lógicos / Cross-Service (Serviço 3 -> Serviços 1 e 2)
+aplicacao }|..|| paciente : "paciente_id"
+aplicacao }|..|| lote : "lote_id"
+aplicacao }|..|| usuario : "usuario_id"
+
+registro_temperatura }|..|| freezer : "freezer_id"
+
+@enduml
