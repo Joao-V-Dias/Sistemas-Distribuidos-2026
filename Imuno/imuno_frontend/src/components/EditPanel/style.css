@@ -1,0 +1,94 @@
+@import url("../../styles/globals.css");
+
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.2s;
+}
+
+.panel-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.edit-panel {
+  position: fixed;
+  top: 0;
+  right: -50vw;
+  width: 50vw;
+  height: 100vh;
+  background: var(--white);
+  border-left: 1px solid var(--blue);
+  display: flex;
+  flex-direction: column;
+  transition: 0.25s ease;
+  z-index: 100;
+}
+
+.edit-panel.open {
+  right: 0;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 2px solid var(--blue);
+}
+
+.panel-header h2 {
+  color: var(--background);
+}
+
+.panel-header button {
+  border: none;
+  background: transparent;
+  color: var(--background);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--background);
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  background: var(--white);
+  border: 1px solid var(--blue);
+  color: var(--background);
+  border-radius: 8px;
+}
+
+.panel-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.save-button {
+  width: 100%;
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}

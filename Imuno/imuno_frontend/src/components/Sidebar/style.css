@@ -1,0 +1,56 @@
+@import url("../../styles/globals.css");
+
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: var(--background);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--blue);
+}
+
+.sidebar-header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 10px;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  color: var(--white);
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.sidebar-link:hover {
+  background: var(--blue);
+}
+
+.sidebar-link.active {
+  background: var(--blue);
+}
+
+.icon {
+  width: 20px;
+  text-align: center;
+}

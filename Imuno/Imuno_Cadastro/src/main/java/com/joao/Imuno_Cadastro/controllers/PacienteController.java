@@ -25,10 +25,17 @@ public class PacienteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Listar pacientes ativos")
-    @GetMapping
-    public ResponseEntity<List<PacienteResponseDTO>> listarAtivos() {
-        List<PacienteResponseDTO> pacientes = pacienteService.listarAtivos();
+    @Operation(summary = "Buscar pacientes")
+    @GetMapping("/all")
+    public ResponseEntity<List<PacienteResponseDTO>> getPacientes() {
+        List<PacienteResponseDTO> pacientes = pacienteService.getPacientes();
+        return ResponseEntity.ok(pacientes);
+    }
+
+    @Operation(summary = "Buscar paciente por nome ou cpf")
+    @GetMapping("/all/{text}")
+    public ResponseEntity<List<PacienteResponseDTO>> buscarPorNomeCpf(@PathVariable String text) {
+        List<PacienteResponseDTO> pacientes = pacienteService.buscarPorNomeCpf(text);
         return ResponseEntity.ok(pacientes);
     }
 

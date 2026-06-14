@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,15 +41,23 @@ public class FreezerServiceImpl implements FreezerService {
     }
 
     @Override
-    public List<FreezerResponseDTO> listar(StatusFreezer status) {
-
-        List<Freezer> freezers;
-        if (status != null) {
-            freezers = freezerRepository.findByStatus(status);
-        } else {
-            freezers = freezerRepository.findAll();
+    public List<FreezerResponseDTO> buscarFreezers() {
+        List<Freezer> freezers = freezerRepository.findAll();
+        List<FreezerResponseDTO> dtos = new ArrayList<>();
+        for(Freezer freezer : freezers) {
+            dtos.add(toResponseDTO(freezer));
         }
-        return freezers.stream().map(this::toResponseDTO).toList();
+        return dtos;
+    }
+
+    @Override
+    public List<FreezerResponseDTO> buscarFreezers(String serial) {
+        List<Freezer> freezers = freezerRepository.findByNumeroSerieContainingIgnoreCase(serial);
+        List<FreezerResponseDTO> dtos = new ArrayList<>();
+        for(Freezer freezer : freezers) {
+            dtos.add(toResponseDTO(freezer));
+        }
+        return dtos;
     }
 
     @Override

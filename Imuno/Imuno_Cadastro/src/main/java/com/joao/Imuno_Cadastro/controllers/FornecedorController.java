@@ -25,6 +25,20 @@ public class FornecedorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @Operation(summary = "Buscar fornecedores")
+    @GetMapping("/all")
+    public ResponseEntity<List<FornecedorResponseDTO>> buscarFornecedores() {
+        List<FornecedorResponseDTO> fornecedores = fornecedorService.buscarFornecedores();
+        return ResponseEntity.ok(fornecedores);
+    }
+
+    @Operation(summary = "Buscar fornecedores por nome ou cnpj")
+    @GetMapping("/all/{text}")
+    public ResponseEntity<List<FornecedorResponseDTO>> buscarPorNomeCNPJ(@PathVariable String text) {
+        List<FornecedorResponseDTO> fornecedores = fornecedorService.buscarFornecedores(text);
+        return ResponseEntity.ok(fornecedores);
+    }
+
     @Operation(summary = "Listar fornecedores ativos")
     @GetMapping
     public ResponseEntity<List<FornecedorResponseDTO>> listarAtivos() {

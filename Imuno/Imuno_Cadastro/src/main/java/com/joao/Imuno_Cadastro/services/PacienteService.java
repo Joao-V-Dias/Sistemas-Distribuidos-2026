@@ -8,8 +8,9 @@ import java.util.List;
 public interface PacienteService {
 
     PacienteResponseDTO cadastrar(PacienteRequestDTO dto);
-    List<PacienteResponseDTO> listarAtivos();
+    List<PacienteResponseDTO> buscarPorNomeCpf(String text);
     PacienteResponseDTO buscarPorId(Long id);
+    List<PacienteResponseDTO>  getPacientes();
     PacienteResponseDTO atualizar(Long id, PacienteRequestDTO dto);
     void inativar(Long id);
 }

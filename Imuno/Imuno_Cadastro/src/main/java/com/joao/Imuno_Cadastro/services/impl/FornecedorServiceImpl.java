@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -49,6 +50,26 @@ public class FornecedorServiceImpl implements FornecedorService {
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();
+    }
+
+    @Override
+    public List<FornecedorResponseDTO> buscarFornecedores() {
+        List<FornecedorResponseDTO> dtos = new ArrayList<>();
+        List<Fornecedor> lstFornecedor =  fornecedorRepository.findAll();
+        for (Fornecedor fornecedor : lstFornecedor) {
+            dtos.add(toResponseDTO(fornecedor));
+        }
+        return dtos;
+    }
+
+    @Override
+    public List<FornecedorResponseDTO> buscarFornecedores(String text) {
+        List<FornecedorResponseDTO> dtos = new ArrayList<>();
+        List<Fornecedor> lstFornecedor =  fornecedorRepository.buscarPorNomeOuCnpj(text);
+        for (Fornecedor fornecedor : lstFornecedor) {
+            dtos.add(toResponseDTO(fornecedor));
+        }
+        return dtos;
     }
 
     @Override
@@ -96,6 +117,8 @@ public class FornecedorServiceImpl implements FornecedorService {
                 fornecedor.getId(),
                 fornecedor.getRazaoSocial(),
                 fornecedor.getCnpj(),
+                fornecedor.getTelefone(),
+                fornecedor.getEmail(),
                 fornecedor.getAtivo()
         );
     }

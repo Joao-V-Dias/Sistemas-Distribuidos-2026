@@ -9,7 +9,9 @@ public record PacienteResponseDTO(
         Long id,
         String nome,
         String cpf,
-        LocalDate dataNascimento,
+        int idade,
+        LocalDate data_nascimento,
+        String telefone,
         Sexo sexo,
         Boolean ativo
 

@@ -3,7 +3,6 @@ package com.joao.Imuno_Cadastro.controllers;
 import com.joao.Imuno_Cadastro.dtos.FreezerRequestDTO;
 import com.joao.Imuno_Cadastro.dtos.FreezerResponseDTO;
 import com.joao.Imuno_Cadastro.dtos.FreezerStatusDTO;
-import com.joao.Imuno_Cadastro.models.enums.StatusFreezer;
 import com.joao.Imuno_Cadastro.services.FreezerService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,17 @@ public class FreezerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Listar freezers")
-    @GetMapping
-    public ResponseEntity<List<FreezerResponseDTO>> listar(@RequestParam(required = false) StatusFreezer status) {
-        List<FreezerResponseDTO> freezers = freezerService.listar(status);
+    @Operation(summary = "Buscar freezers")
+    @GetMapping("/all")
+    public ResponseEntity<List<FreezerResponseDTO>> buscarFreezers() {
+        List<FreezerResponseDTO> freezers = freezerService.buscarFreezers();
+        return ResponseEntity.ok(freezers);
+    }
+
+    @Operation(summary = "Buscar freezers por serial")
+    @GetMapping("/all/{serial}")
+    public ResponseEntity<List<FreezerResponseDTO>> buscarFreezers(@PathVariable String serial) {
+        List<FreezerResponseDTO> freezers = freezerService.buscarFreezers(serial);
         return ResponseEntity.ok(freezers);
     }
 

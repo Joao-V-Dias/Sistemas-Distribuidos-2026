@@ -9,6 +9,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,13 +39,28 @@ public class PacienteServiceImpl implements PacienteService {
     }
 
     @Override
-    public List<PacienteResponseDTO> listarAtivos() {
-        return pacienteRepository.findByAtivoTrue().stream().map(this::toResponseDTO).toList();
+    public List<PacienteResponseDTO> buscarPorNomeCpf(String text) {
+        List<Paciente> lstPacientes= pacienteRepository.buscarPorNomeOuCpf(text);
+        List<PacienteResponseDTO> dtos = new ArrayList<>();
+        for (Paciente paciente : lstPacientes) {
+            dtos.add(toResponseDTO(paciente));
+        }
+        return dtos;
     }
 
     @Override
     public PacienteResponseDTO buscarPorId(Long id) {
         return toResponseDTO(buscarPaciente(id));
+    }
+
+    @Override
+    public List<PacienteResponseDTO> getPacientes() {
+        List<PacienteResponseDTO> dtos = new ArrayList<>();
+        List<Paciente> lstPaciente =  pacienteRepository.findAll();
+        for (Paciente paciente : lstPaciente) {
+            dtos.add(toResponseDTO(paciente));
+        }
+        return dtos;
     }
 
     @Override
@@ -71,6 +89,17 @@ public class PacienteServiceImpl implements PacienteService {
 
     private PacienteResponseDTO toResponseDTO(Paciente paciente) {
 
-        return new PacienteResponseDTO(paciente.getId(), paciente.getNome(), paciente.getCpf(), paciente.getDataNascimento(), paciente.getSexo(), paciente.getAtivo());
+        int idade = Period.between(paciente.getDataNascimento(), LocalDate.now()).getYears();
+
+        return new PacienteResponseDTO(
+                paciente.getId(),
+                paciente.getNome(),
+                paciente.getCpf(),
+                idade,
+                paciente.getDataNascimento(),
+                paciente.getTelefone(),
+                paciente.getSexo(),
+                paciente.getAtivo()
+        );
     }
 }

@@ -1,0 +1,143 @@
+@import url("../../styles/globals.css");
+
+.crud-page {
+  padding: 24px;
+  color: var(--background);
+}
+
+/* HEADER */
+.crud-header,
+.crud-search {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.crud-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+/* BOTÃO */
+.create-button {
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  width: 15%;
+  padding: 14px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.create-button:hover {
+  opacity: 0.9;
+}
+
+/* BUSCA */
+.crud-search {
+  margin-bottom: 24px;
+}
+
+.crud-search input {
+  width: 90%;
+  padding: 12px;
+  margin-right: 20px;
+  border: 1px solid var(--blue);
+  border-radius: 6px;
+
+  color: var(--background);
+  outline: none;
+}
+
+.crud-search input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* TABELA */
+.crud-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.crud-table thead {
+  border-bottom: 2px solid var(--blue);
+}
+
+.crud-table th {
+  text-align: left;
+  padding: 16px;
+  font-weight: bold;
+}
+
+.crud-table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.crud-table tbody tr:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+/* AÇÕES */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-actions {
+  width: 20px;
+  height: 20px;
+  padding: 6px;
+  border: 1px solid var(--background);
+  border-radius: 6px;
+  opacity: 0.6;
+  background: transparent;
+  color: var(--background);
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.icon-actions:hover {
+  background: var(--blue);
+}
+
+.crud-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #2563eb;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.crud-table thead {
+  position: sticky;
+  top: 0;
+  background-color: var(--white);
+}
+
+.table-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--blue);
+  border-radius: 999px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.7);
+}
